@@ -22,6 +22,7 @@ All services share:
 
 ## Architecture
 
+
 User 
     | ---> HTTP (80)
     v
