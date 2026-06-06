@@ -23,6 +23,9 @@ All services share:
 ## Architecture
 
 ```text
+user
+ |
+ v
 Internet
     |
     v
