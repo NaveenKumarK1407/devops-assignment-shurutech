@@ -23,34 +23,29 @@ All services share:
 ## Architecture
 
 
-User 
-    | ---> HTTP (80)
-    v
 Internet
-    |  ---> 8080
+    |
     v
 Application Load Balancer
-    |  ----> Redis (6379)
+    |
     v
 API Service (ECS Fargate)
     |
-    ----------------------
-    |                      |
-    v                      v
-Orders Service      Inventory Service
-(ECS Fargate)       (ECS Fargate)
+    +------------------+
+    |                  |
+    v                  v
+Orders Service    Inventory Service
+(ECS Fargate)     (ECS Fargate)
 
         |                 |
-        ----------------
-                 |  ----> 5432
+        +--------+--------+
+                 |
                  v
-
          PostgreSQL (RDS)
 
 API ---------> Redis
 Orders ------> Redis
 Inventory ---> Redis
-
 
 ## Components Used
 
