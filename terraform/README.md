@@ -1,31 +1,31 @@
 
 # DevOps Exercise – ECS Fargate with PostgreSQL and Redis
 
+
+## About the Project
+
 This project provisions a simple microservices platform on AWS using Terraform.
 
-The platform consists of three services running on ECS Fargate:
+There are three services running on ECS Fargate:
 
- Service   | Port | Public Access | Dependencies      |
- api       | 8080 | Yes (via ALB) | Redis             |
- orders    | 8081 | No            | PostgreSQL, Redis |
- inventory | 8082 | No            | PostgreSQL, Redis |
+* **api** (Port 8080) – Publicly accessible through an Application Load Balancer
+* **orders** (Port 8081) – Internal service
+* **inventory** (Port 8082) – Internal service
 
-The API service is exposed to the internet through an Application Load Balancer, while Orders and Inventory remain internal services.
+The services share:
 
-All services share:
+* One PostgreSQL database hosted on Amazon RDS
+* One Redis instance hosted on Amazon ElastiCache
 
- One PostgreSQL database hosted on Amazon RDS
- Redis instance hosted on Amazon ElastiCache
+The API service is the only service exposed to the internet. Orders and Inventory remain private and can only be accessed within the VPC.
 
+To avoid hardcoded credentials, database and Redis connection details are stored in AWS Systems Manager Parameter Store and injected into ECS tasks at runtime.
 
-
+---
 
 ## Architecture
 
 ```text
-user
- |
- v
 Internet
     |
     v
@@ -44,6 +44,7 @@ Orders Service    Inventory Service
         +--------+--------+
                  |
                  v
+
          PostgreSQL (RDS)
 
 API ---------> Redis
@@ -51,92 +52,104 @@ Orders ------> Redis
 Inventory ---> Redis
 ```
 
-## Components Used
+---
 
+## AWS Services Used
 
- Amazon ECS Fargate
- ECS Cluster
- ECS Services
- ECS Task Definitions
-
-# Networking
-
- VPC
- Public Subnet
- Private Subnet
- Internet Gateway
- Route Tables
-
-# Load Balancing
-
- Application Load Balancer
- Target Group
- Listener
-
-# Database
-
- Amazon RDS PostgreSQL
-
-# Cache
-
- Amazon ElastiCache Redis
-
-# Secrets
-
- AWS Systems Manager Parameter Store
-
-# Monitoring
-
+* Amazon ECS Fargate
+* Application Load Balancer (ALB)
+* Amazon RDS PostgreSQL
+* Amazon ElastiCache Redis
+* AWS Systems Manager Parameter Store
 * Amazon CloudWatch Logs
+* Amazon VPC
+* Security Groups
 
+---
 
+## Security
 
-## Security Design
+A basic least-privilege approach was followed:
 
-The solution follows a basic least-privilege approach.
+* ALB accepts HTTP traffic from the internet.
+* ECS services are only accessible through the ALB.
+* PostgreSQL is only accessible from ECS services.
+* Redis is only accessible from ECS services.
+* No secrets are hardcoded in Terraform or container definitions.
 
-## ALB Security Group
+---
 
- Allows HTTP traffic from the internet (Port 80)
+## Deployment
 
-### ECS Security Group
+Initialize Terraform:
 
-* Allows traffic only from the ALB
-
-### RDS Security Group
-
-* Allows PostgreSQL traffic (5432) only from ECS services
-
-### Redis Security Group
-
-* Allows Redis traffic (6379) only from ECS services
-
-
-
-
-
-# Deployment
-
-# Initialize Terraform:
-
+```bash
 terraform init
+```
 
-# Validate configuration:
+Validate the configuration:
 
-
+```bash
 terraform validate
+```
 
+Review the execution plan:
 
-# Review execution plan:
-
-
+```bash
 terraform plan
+```
 
-# Deploy infrastructure:
+Deploy the infrastructure:
 
-
+```bash
 terraform apply
+```
 
+After deployment, Terraform outputs the ALB DNS name along with the RDS and Redis endpoints.
+
+---
+
+## Verification
+
+Verify that the ECS services are running and healthy.
+
+Test the API endpoint:
+
+```bash
+curl http://<alb_dns_name>
+```
+
+Check:
+
+* ECS services are healthy
+* ALB target group is healthy
+* CloudWatch logs are being generated
+* RDS is not publicly accessible
+* Redis is not publicly accessible
+
+---
+
+## Cleanup
+
+To remove all resources:
+
+```bash
+terraform destroy
+```
+
+---
+
+## Assumptions
+
+* Single AWS region
+* Single Availability Zone
+* Placeholder container image (`nginxdemos/hello`)
+* No autoscaling configuration
+* No CI/CD pipeline
+* HTTP listener only
+* Terraform used as the Infrastructure as Code tool
+
+---
 
 
 
