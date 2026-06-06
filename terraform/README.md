@@ -22,7 +22,6 @@ All services share:
 
 ## Architecture
 
-
 Internet
     |
     v
@@ -38,10 +37,10 @@ Orders Service    Inventory Service
 (ECS Fargate)     (ECS Fargate)
 
         |                 |
-        +--------+--------+
+    --------+--------+
                  |
                  v
-         PostgreSQL (RDS)
+  PostgreSQL (RDS)
 
 API ---------> Redis
 Orders ------> Redis
